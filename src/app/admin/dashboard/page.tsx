@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { IOrder } from "@/models/Order";
+import { OrderData } from "@/lib/orderStorage";
 import { FaBox, FaClock, FaCheckCircle, FaTimesCircle, FaSearch } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [orders, setOrders] = useState<IOrder[]>([]);
+  const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
 
@@ -19,19 +20,42 @@ export default function AdminDashboard() {
     }
 
     fetchOrders();
+    const interval = setInterval(() => fetchOrders(true), 5000);
+    return () => clearInterval(interval);
   }, [router]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (isPolling = false) => {
     try {
       const res = await fetch("/api/orders");
       const data = await res.json();
       if (data.success) {
-        setOrders(data.orders);
+        if (isPolling) {
+          setOrders(prev => {
+            if (data.orders.length > prev.length) {
+               const latestPrev = prev[0];
+               const latestNew = data.orders[0];
+               // Check if the top order is new
+               if (!latestPrev || (latestNew && latestNew._id !== latestPrev._id)) {
+                 Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Your new order is arrived',
+                    showConfirmButton: false,
+                    timer: 3000
+                 });
+               }
+            }
+            return data.orders;
+          });
+        } else {
+          setOrders(data.orders);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch orders", error);
     } finally {
-      setLoading(false);
+      if (!isPolling) setLoading(false);
     }
   };
 
