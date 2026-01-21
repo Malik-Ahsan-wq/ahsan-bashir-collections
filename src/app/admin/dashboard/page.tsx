@@ -36,15 +36,15 @@ export default function AdminDashboard() {
                const latestNew = data.orders[0];
                // Check if the top order is new
                if (!latestPrev || (latestNew && latestNew._id !== latestPrev._id)) {
-                 Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Your new order is arrived',
-                    showConfirmButton: false,
-                    timer: 3000
-                 });
-               }
+                  Swal.fire({
+                     toast: true,
+                     position: 'top-end',
+                     icon: 'success',
+                     title: 'your new order Arrived perfectly',
+                     showConfirmButton: false,
+                     timer: 3000
+                  });
+                }
             }
             return data.orders;
           });

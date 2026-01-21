@@ -5,20 +5,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/data/products";
 import type { Product } from "@/data/products";
-import { FaWhatsapp, FaStar, FaRegStar, FaPlus, FaMinus } from "react-icons/fa";
+import { FaWhatsapp, FaStar, FaRegStar, FaPlus, FaMinus, FaShoppingCart } from "react-icons/fa";
+import { useCart } from "@/context/CartContext";
+import Swal from "sweetalert2";
 
 // --- REUSABLE PRODUCT CARD COMPONENT ---
 function ProductCard({ p }: { p: Product }) {
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   const increment = () => setQuantity((prev) => prev + 1);
   const decrement = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const totalPrice = p.price * quantity;
 
-  const whatsappMessage = encodeURIComponent(
-    `Hi, I'm interested in ordering ${quantity}kg of ${p.name}. Total Price: Rs ${totalPrice.toLocaleString()}`
-  );
+  const handleAddToCart = () => {
+    addToCart(p, quantity);
+    Swal.fire({
+      title: "Added to Cart!",
+      text: `${quantity} ${p.name} added to your cart.`,
+      icon: "success",
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  };
 
   return (
     <div
@@ -81,14 +94,12 @@ function ProductCard({ p }: { p: Product }) {
           <span className="text-xs text-zinc-400 font-medium">Rs {p.price}/kg</span>
         </div>
 
-        <a
-          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${whatsappMessage}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 text-white px-4 py-3 text-sm font-bold transition-all hover:bg-green-700 shadow-md active:scale-95 mt-1"
+        <button
+          onClick={handleAddToCart}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-3 text-sm font-bold transition-all hover:bg-orange-700 shadow-md active:scale-95 mt-1"
         >
-          <FaWhatsapp className="text-lg" /> Order via WhatsApp
-        </a>
+          <FaShoppingCart className="text-lg" /> Add to Cart
+        </button>
       </div>
     </div>
   );
