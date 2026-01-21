@@ -1,0 +1,27 @@
+[
+  {
+    "customerName": "ahsanmalik",
+    "address": "khalid town",
+    "phone": "03276227156",
+    "items": [
+      {
+        "productId": "m3",
+        "productName": "Chicken Handi",
+        "quantity": 3,
+        "price": 1199
+      },
+      {
+        "productId": "m2",
+        "productName": "Beef Karahi",
+        "quantity": 1,
+        "price": 1299
+      }
+    ],
+    "totalAmount": 4896,
+    "paymentMethod": "Cash on Delivery",
+    "_id": "wpj4xvb0fpg08ti33o4u",
+    "createdAt": "2026-01-21T18:09:08.320Z",
+    "updatedAt": "2026-01-21T18:09:08.320Z",
+    "status": "Pending"
+  }
+]
