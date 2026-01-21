@@ -1,17 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import Order from "@/models/Order";
-import { connectToDB } from "@/lib/mongoose";
+import { IOrder } from "@/models/Order";
+
+// In-memory storage for orders (replaces MongoDB)
+// Note: Data will be lost when the server restarts
+// Using global variable to persist across hot reloads in dev, 
+// though strictly in production serverless envs this might reset per invocation/cold start.
+// For a "perfect" no-db solution without external services, this is the standard approach.
+const globalForOrders = global as unknown as { orders: IOrder[] };
+const orders: IOrder[] = globalForOrders.orders || [];
+if (process.env.NODE_ENV !== "production") globalForOrders.orders = orders;
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.MONGODB_URI) {
-      console.error("MONGODB_URI is not defined");
-      return NextResponse.json({ success: false, error: "Database configuration error" }, { status: 500 });
-    }
-    await connectToDB();
     const body = await req.json();
-    const order = await Order.create(body);
-    return NextResponse.json({ success: true, order }, { status: 201 });
+
+    // Create a new order object
+    const newOrder: IOrder = {
+      _id: Math.random().toString(36).substr(2, 9), // Generate a random ID
+      customerName: body.customerName,
+      address: body.address,
+      phone: body.phone,
+      totalAmount: body.totalAmount,
+      status: "Pending",
+      paymentMethod: body.paymentMethod || "Cash on Delivery",
+      items: body.items,
+      createdAt: new Date(),
+    };
+
+    // Save to in-memory storage
+    orders.push(newOrder);
+    
+    console.log("Order placed successfully (In-Memory):", newOrder);
+
+    return NextResponse.json({ success: true, order: newOrder }, { status: 201 });
   } catch (error: any) {
     console.error("Order creation error:", error);
     return NextResponse.json({ success: false, error: error.message || "Failed to create order" }, { status: 500 });
@@ -20,9 +41,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    await connectToDB();
-    const orders = await Order.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, orders });
+    // Return orders sorted by createdAt descending
+    const sortedOrders = [...orders].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
+    return NextResponse.json({ success: true, orders: sortedOrders });
   } catch (error) {
     console.error("Order fetch error:", error);
     return NextResponse.json({ success: false, error: "Failed to fetch orders" }, { status: 500 });
