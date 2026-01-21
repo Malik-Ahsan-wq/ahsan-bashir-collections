@@ -4,13 +4,17 @@ import { connectToDB } from "@/lib/mongoose";
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.MONGODB_URI) {
+      console.error("MONGODB_URI is not defined");
+      return NextResponse.json({ success: false, error: "Database configuration error" }, { status: 500 });
+    }
     await connectToDB();
     const body = await req.json();
     const order = await Order.create(body);
     return NextResponse.json({ success: true, order }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Order creation error:", error);
-    return NextResponse.json({ success: false, error: "Failed to create order" }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || "Failed to create order" }, { status: 500 });
   }
 }
 

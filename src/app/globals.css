@@ -28,3 +28,11 @@ body {
 h1, h2, h3 {
   font-family: var(--font-geist-mono), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

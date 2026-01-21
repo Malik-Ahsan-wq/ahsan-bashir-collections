@@ -56,7 +56,10 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData),
       });
 
-      if (!res.ok) throw new Error("Failed to place order");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to place order");
+      }
 
       clearCart();
       Swal.fire({
@@ -67,11 +70,11 @@ export default function CheckoutPage() {
       }).then(() => {
         router.push("/");
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       Swal.fire({
         title: "Error!",
-        text: "Something went wrong. Please try again.",
+        text: error.message || "Something went wrong. Please try again.",
         icon: "error",
       });
     } finally {
